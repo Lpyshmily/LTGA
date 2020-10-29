@@ -222,7 +222,7 @@ int solve_GA_fop(double* Out, const double* rv0, const double* rv1, const double
 		x[14] = 7.901755272921728e-002;
 		x[15] = -5.190057707485141e-003;
 		x[16] = 1.420237177534943e+001;
-		/*
+		
 		x[0] = 6.137291124645334e-001;
 		x[1] = -2.792803801659735e-001;
 		x[2] = -4.608278012924570e-001;
@@ -240,7 +240,7 @@ int solve_GA_fop(double* Out, const double* rv0, const double* rv1, const double
 		x[14] = 7.901755272921728e-002;
 		x[15] = -5.190057707485141e-003;
 		x[16] = 1.420237177534943e+001;
-		*/
+		
 		info = hybrd1(fvec_GA_fop_rend, n, x, fvec, sfpara, wa, xtol, 5, 2000); // info-hybrd1()的输出标志
 		// std::cout << enorm(n,fvec) << std::endl;
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)
