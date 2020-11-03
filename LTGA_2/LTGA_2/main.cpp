@@ -305,7 +305,7 @@ void test_GA_factor()
 		if (Out1[9] > t1)
 		{
 			printf("无法完成第一段轨迹转移\n");
-			fprintf(fid, "%f\t%f\t%f\t%f\t1 fail\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out1[9]*TUnit/86400);
+			fprintf(fid, "%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400);
 			factor += 0.01;
 			continue;
 		}
@@ -349,7 +349,7 @@ void test_GA_factor()
 		if (Out3[9] > t2)
 		{
 			printf("剩余时间无法完成第二段轨迹转移\n");
-			fprintf(fid, "%f\t%f\t%f\t%f\t2 fail\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400);
+			fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400);
 			factor += 0.01;
 			continue;
 		}
@@ -361,7 +361,7 @@ void test_GA_factor()
 		for (i=1; i<9; i++)
 			printf("%.15e,\n", Out4[i]);
 
-		fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out4[9]*TUnit/86400, Out4[0]*MUnit);
+		fprintf(fid, "%f\t%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400, Out4[0]*MUnit);
 
 		factor += 0.01;
 	}
