@@ -256,7 +256,7 @@ void test_GA_factor()
 
 	FILE *fid = fopen("info_3.txt", "w");
 	
-	int i, flag;
+	int i, j, flag;
 	// 初始条件设定与归一化
 	// 初始、末端位置和速度，单位分别为AU和AU/a
 	double rv0[6] = { 5.876420e-1, 7.954627e-1, -3.845203e-5, -5.155764, 3.707833, -3.191945e-4 };
@@ -271,10 +271,11 @@ void test_GA_factor()
 	double Out2[15] = {0.0}; // 第一段燃料最优飞越输出结果，[0-6]末端状态，[7-14]8个需要打靶的协态初值
 	double Out3[10] = {0.0}; // 第二段时间最优交会输出结果，[0]剩余质量，[1-9]9个打靶变量
 	double Out4[9] = {0.0}; // 第二段燃料最优交会输出结果，[0]剩余质量，[1-8]8个打靶变量
-	double m0, tempm, tf, epsi, factor, t1, t2;
+	double m0, tempm, tf, epsi, factor, t1, t2, shortest1, shortest2;
 	tf = 2201*86400/TUnit;
 	epsi = 1.0e-5;
 	m0 = 20000.0/MUnit;
+	const int RepeatTime = 10; // 时间最优重复求解次数
 
 	// 首先随机给定一个参数，代表第一段轨迹转移时间在总时间中的占比
 	factor = 0.3;
@@ -282,6 +283,8 @@ void test_GA_factor()
 	{
 		printf("**********\nfractor=%f\n", factor);
 		tempm = m0;
+		shortest1 = 1e7;// 首先设置成一个很大的值
+		shortest2 = 1e7;// 首先设置成一个很大的值
 		t1 = factor*tf;
 		t2 = (1-factor)*tf;
 		Mars.GetRV(rvm, 59534.0 + t1*TUnit/86400, muNU);
@@ -294,18 +297,25 @@ void test_GA_factor()
 		// 求解
 		// 第一段
 		// 时间最优飞越
-		flag = solve_rv_top_flyby_fixed(Out1, rv0, rvm, tempm, MaxGuessNum);
-		printf("求解成功%d\n",flag);
-		printf("剩余质量为:%.3fkg\n", Out1[0]*MUnit);
-		printf("转移时间为:%.3f天\n", Out1[9]*TUnit/86400);
-		printf("打靶变量值为:\n");
-		for (i=1; i<10; i++)
-			printf("%.15e,\n", Out1[i]);
+		for (j=0;j<RepeatTime;++j)
+		{
+			printf("第%d次求解第一段时间最优飞越问题\n", j+1);
+			flag = solve_rv_top_flyby_fixed(Out1, rv0, rvm, tempm, MaxGuessNum);
+			printf("求解成功%d\n",flag);
+			printf("剩余质量为:%.3fkg\n", Out1[0]*MUnit);
+			printf("转移时间为:%.3f天\n", Out1[9]*TUnit/86400);
+			printf("打靶变量值为:\n");
+			for (i=1; i<10; i++)
+				printf("%.15e,\n", Out1[i]);
+			if (flag && (Out1[9] < shortest1))
+				shortest1 = Out1[9];
+		}
+		printf("最短转移时间为:%.3f天\n", shortest1*TUnit/86400);
 		// 判断能否完成第一段转移
-		if (Out1[9] > t1)
+		if (shortest1 > t1)
 		{
 			printf("无法完成第一段轨迹转移\n");
-			fprintf(fid, "%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400);
+			fprintf(fid, "%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400);
 			factor += 0.01;
 			continue;
 		}
@@ -338,18 +348,25 @@ void test_GA_factor()
 		V_Add(&temprv[3], vm, vout, 3); // 引力辅助后的速度
 		tempm = Out2[6];// 引力辅助后的质量
 		// 时间最优交会
-		flag = solve_rv_top_rend_fixed(Out3, temprv, rv1, tempm, MaxGuessNum);
-		printf("求解成功%d\n",flag);
-		printf("剩余质量为:%.3fkg\n", Out3[0]*MUnit);
-		printf("转移时间为:%.3f天\n", Out3[9]*TUnit/86400);
-		printf("打靶变量值为:\n");
-		for (i=1; i<10; i++)
-			printf("%.15e,\n", Out3[i]);
+		for (j=0;j<RepeatTime;++j)
+		{
+			printf("第%d次求解第二段时间最优交会问题\n", j+1);
+			flag = solve_rv_top_rend_fixed(Out3, temprv, rv1, tempm, MaxGuessNum);
+			printf("求解成功%d\n",flag);
+			printf("剩余质量为:%.3fkg\n", Out3[0]*MUnit);
+			printf("转移时间为:%.3f天\n", Out3[9]*TUnit/86400);
+			printf("打靶变量值为:\n");
+			for (i=1; i<10; i++)
+				printf("%.15e,\n", Out3[i]);
+			if (flag && (Out3[9] < shortest2))
+				shortest2 = Out3[9];
+		}
+		printf("最短转移时间为:%.3f天\n", shortest2*TUnit/86400);
 		// 判断能否完成第二段转移
-		if (Out3[9] > t2)
+		if (shortest2 > t2)
 		{
 			printf("剩余时间无法完成第二段轨迹转移\n");
-			fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400);
+			fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400);
 			factor += 0.01;
 			continue;
 		}
@@ -361,7 +378,7 @@ void test_GA_factor()
 		for (i=1; i<9; i++)
 			printf("%.15e,\n", Out4[i]);
 
-		fprintf(fid, "%f\t%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, Out1[9]*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400, Out4[0]*MUnit);
+		fprintf(fid, "%f\t%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400, Out4[0]*MUnit);
 
 		factor += 0.01;
 	}
