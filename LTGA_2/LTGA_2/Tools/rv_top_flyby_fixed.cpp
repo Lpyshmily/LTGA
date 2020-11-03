@@ -1,4 +1,4 @@
-#include "rv_top_rend_fixed.h"
+#include "rv_top_flyby_fixed.h"
 #include "vector_operation.h"
 #include "ODE45.h"
 #include "dynamics_rv.h"
@@ -12,7 +12,8 @@
 [1-7] 协态变量
 [8] tf */
 /* fvec[9] 打靶偏差 此函数的输出量
-[0-5] 末端状态约束
+[0-2] 末端位置约束
+[3-5] 末端速度协态为零
 [6] 末端质量协态为零
 [7] 协态归一化
 [8] 静态条件*/
@@ -23,7 +24,7 @@
 [7-12] rv1 目标天体的位置速度
 [13] 是否输出的标志 */
 // 计算成功时，返回0或大于0的值，不成功时返回小于0的值
-int fvec_rv_top_rend_fixed(int n, const double *x, double *fvec, int iflag, const double* sfpara)
+int fvec_rv_top_flyby_fixed(int n, const double *x, double *fvec, int iflag, const double* sfpara)
 {
 	int i;
 	
@@ -52,7 +53,8 @@ int fvec_rv_top_rend_fixed(int n, const double *x, double *fvec, int iflag, cons
 	int flag, NumPoint;
 	flag = ode45(dynamics_rv_top, x0, NULL, 0.0, tf, 14, NumPoint, work, AbsTol, RelTol, 0, -1, -1, fid);
 
-	V_Minus(fvec, x0, rvf, 6);
+	V_Minus(fvec, x0, rvf, 3);
+	V_Copy(&fvec[3], &x0[10], 3); // 速度协态
 	fvec[6] = x0[13];
 	fvec[7] = V_Norm2(x, 8) - 1.0;
 	fvec[8] = ham_rv_top(x0, lam0); // 静态条件 H(tf)=0
@@ -65,7 +67,7 @@ int fvec_rv_top_rend_fixed(int n, const double *x, double *fvec, int iflag, cons
 	return 0;
 }
 // Out[10] [0]剩余质量 [1-9]9个打靶变量
-int solve_rv_top_rend_fixed(double* Out, const double* rv0, const double* rvf, double m0, int MaxGuessNum)
+int solve_rv_top_flyby_fixed(double* Out, const double* rv0, const double* rvf, double m0, int MaxGuessNum)
 {
 	int n, j, info, flag=0;
 	
@@ -107,11 +109,11 @@ int solve_rv_top_rend_fixed(double* Out, const double* rv0, const double* rvf, d
 
 		x[8] = (double)rand()/RAND_MAX*10*M_2PI;
 		
-		info = hybrd1(fvec_rv_top_rend_fixed, n, x, fvec, sfpara, wa, xtol, 20, 2000);
+		info = hybrd1(fvec_rv_top_flyby_fixed, n, x, fvec, sfpara, wa, xtol, 20, 2000);
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)
 		{
 			sfpara[13]=1.0;
-			j=fvec_rv_top_rend_fixed(n, x, fvec, 1, sfpara);
+			j=fvec_rv_top_flyby_fixed(n, x, fvec, 1, sfpara);
 			if(fvec[0]>0.0 && x[8]>0.0) // 剩余质量和转移时间必须为正
 			{
 				flag=1;

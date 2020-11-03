@@ -184,7 +184,7 @@ void test_GA()
 	m0 = 20000.0/MUnit;
 
 	// 首先随机给定一个参数，代表第一段轨迹转移时间在总时间中的占比
-	factor = 0.42;
+	factor = 0.37;
 	t1 = factor*tf;
 	t2 = (1-factor)*tf;
 	Mars.GetRV(rvm, 59534.0 + t1*TUnit/86400, muNU);
@@ -254,7 +254,7 @@ void test_GA_factor()
 	// 需要对Tools.h/constants.h中的参数进行修改
 	// Isp=6000 Tmax=2.26 m0=20000
 
-	FILE *fid = fopen("info_2.txt", "w");
+	FILE *fid = fopen("info_3.txt", "w");
 	
 	int i, flag;
 	// 初始条件设定与归一化
@@ -267,9 +267,10 @@ void test_GA_factor()
 		rv1[i] = rv1[i]/(365.25*86400)*TUnit;
 	}
 	double rvm[6] = {0.0}, temprv[6] = {0.0};
-	double Out1[15] = {0.0}; // 输出计算结果，[0-6]-末端状态，[7-14]-8个需要打靶的协态初值
-	double Out2[9] = {0.0}; // 输出计算结果，0-剩余质量，1~8-8个需要打靶的协态初值
-	double Out3[10] = {0.0};
+	double Out1[10] = {0.0}; // 第一段时间最优飞越输出结果，[0]剩余质量，[1-9]9个打靶变量
+	double Out2[15] = {0.0}; // 第一段燃料最优飞越输出结果，[0-6]末端状态，[7-14]8个需要打靶的协态初值
+	double Out3[10] = {0.0}; // 第二段时间最优交会输出结果，[0]剩余质量，[1-9]9个打靶变量
+	double Out4[9] = {0.0}; // 第二段燃料最优交会输出结果，[0]剩余质量，[1-8]8个打靶变量
 	double m0, tempm, tf, epsi, factor, t1, t2;
 	tf = 2201*86400/TUnit;
 	epsi = 1.0e-5;
@@ -291,16 +292,33 @@ void test_GA_factor()
 		srand( (unsigned)time( NULL ) );//设定随机数种子，若没有此设置，每次产生一样的随机数
 
 		// 求解
-		// 第一段 燃料最优飞越
-		flag = solve_rv_fop_flyby(Out1, rv0, rvm, tempm, t1, epsi, MaxGuessNum);
+		// 第一段
+		// 时间最优飞越
+		flag = solve_rv_top_flyby_fixed(Out1, rv0, rvm, tempm, MaxGuessNum);
 		printf("求解成功%d\n",flag);
-		printf("剩余质量为:%.3fkg\n", Out1[6]*MUnit);
+		printf("剩余质量为:%.3fkg\n", Out1[0]*MUnit);
+		printf("转移时间为:%.3f天\n", Out1[9]*TUnit/86400);
+		printf("打靶变量值为:\n");
+		for (i=1; i<10; i++)
+			printf("%.15e,\n", Out1[i]);
+		// 判断能否完成第一段转移
+		if (Out1[9] > t1)
+		{
+			printf("无法完成第一段轨迹转移\n");
+			fprintf(fid, "%f\t%f\t%f\t%f\t1 fail\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out1[9]*TUnit/86400);
+			factor += 0.01;
+			continue;
+		}
+		// 燃料最优飞越
+		flag = solve_rv_fop_flyby(Out2, rv0, rvm, tempm, t1, epsi, MaxGuessNum);
+		printf("求解成功%d\n",flag);
+		printf("剩余质量为:%.3fkg\n", Out2[6]*MUnit);
 		printf("末端状态量为:\n");
 		for (i=0;i<7;++i)
-			printf("%.15e,\n", Out1[i]);
+			printf("%.15e,\n", Out2[i]);
 		printf("打靶变量值为:\n");
 		for (i=7; i<15; i++)
-			printf("%.15e,\n", Out1[i]);
+			printf("%.15e,\n", Out2[i]);
 	
 
 		// 引力辅助
@@ -309,7 +327,7 @@ void test_GA_factor()
 
 		V_Copy(vm, &rvm[3], 3); // 火星速度
 		norm_vm = V_Norm2(vm, 3);
-		V_Minus(vin, &Out1[3], vm, 3); // 引力辅助前的相对速度
+		V_Minus(vin, &Out2[3], vm, 3); // 引力辅助前的相对速度
 		temp = V_Dot(vin, vm, 3)/(norm_vm*norm_vm);
 		V_Multi(tempV1, vm, temp, 3); // 相对速度沿vm的分量
 		V_Minus(tempV2, vin, tempV1, 3); // 相对速度垂直于vm的分量
@@ -318,9 +336,8 @@ void test_GA_factor()
 		// 第二段 用temprv表示引力辅助后的位置速度
 		V_Copy(temprv, rvm, 3); // 引力辅助后的位置
 		V_Add(&temprv[3], vm, vout, 3); // 引力辅助后的速度
-		tempm = Out1[6];// 引力辅助后的质量
+		tempm = Out2[6];// 引力辅助后的质量
 		// 时间最优交会
-	
 		flag = solve_rv_top_rend_fixed(Out3, temprv, rv1, tempm, MaxGuessNum);
 		printf("求解成功%d\n",flag);
 		printf("剩余质量为:%.3fkg\n", Out3[0]*MUnit);
@@ -328,25 +345,23 @@ void test_GA_factor()
 		printf("打靶变量值为:\n");
 		for (i=1; i<10; i++)
 			printf("%.15e,\n", Out3[i]);
-
 		// 判断能否完成第二段转移
 		if (Out3[9] > t2)
 		{
 			printf("剩余时间无法完成第二段轨迹转移\n");
-			fprintf(fid, "%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400);
+			fprintf(fid, "%f\t%f\t%f\t%f\t2 fail\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400);
 			factor += 0.01;
 			continue;
 		}
-
 		// 燃料最优交会
-		flag = solve_rv_fop_rend(Out2, temprv, rv1, tempm, t2, epsi, MaxGuessNum);
+		flag = solve_rv_fop_rend(Out4, temprv, rv1, tempm, t2, epsi, MaxGuessNum);
 		printf("求解成功%d\n",flag);
-		printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
+		printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 		printf("打靶变量值为:\n");
 		for (i=1; i<9; i++)
-			printf("%.15e,\n", Out2[i]);
+			printf("%.15e,\n", Out4[i]);
 
-		fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out3[9]*TUnit/86400, Out2[0]*MUnit);
+		fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, t2*TUnit/86400, Out4[9]*TUnit/86400, Out4[0]*MUnit);
 
 		factor += 0.01;
 	}

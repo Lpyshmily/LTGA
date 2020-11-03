@@ -16,6 +16,7 @@
 #include "ee_fop_rend.h"
 #include "rv_fop_rend.h"
 #include "rv_top_rend_fixed.h"
+#include "rv_top_flyby_fixed.h"
 #include "rv_fop_flyby.h"
 #include "PSO.H"
 
