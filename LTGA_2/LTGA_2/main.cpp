@@ -254,7 +254,7 @@ void test_GA_factor()
 	// 需要对Tools.h/constants.h中的参数进行修改
 	// Isp=6000 Tmax=2.26 m0=20000
 
-	FILE *fid = fopen("info_3.txt", "w");
+	FILE *fid = fopen("info_4.txt", "w");
 	
 	int i, j, flag;
 	// 初始条件设定与归一化
@@ -275,7 +275,7 @@ void test_GA_factor()
 	tf = 2201*86400/TUnit;
 	epsi = 1.0e-5;
 	m0 = 20000.0/MUnit;
-	const int RepeatTime = 10; // 时间最优重复求解次数
+	const int RepeatTime = 20; // 时间最优重复求解次数
 
 	// 首先随机给定一个参数，代表第一段轨迹转移时间在总时间中的占比
 	factor = 0.3;
