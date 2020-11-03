@@ -254,7 +254,7 @@ void test_GA_factor()
 	// 需要对Tools.h/constants.h中的参数进行修改
 	// Isp=6000 Tmax=2.26 m0=20000
 
-	FILE *fid = fopen("info_4.txt", "w");
+	FILE *fid = fopen("info_5.txt", "w");
 	
 	int i, j, flag;
 	// 初始条件设定与归一化
@@ -275,11 +275,11 @@ void test_GA_factor()
 	tf = 2201*86400/TUnit;
 	epsi = 1.0e-5;
 	m0 = 20000.0/MUnit;
-	const int RepeatTime = 20; // 时间最优重复求解次数
+	const int RepeatTime = 10; // 时间最优重复求解次数
 
 	// 首先随机给定一个参数，代表第一段轨迹转移时间在总时间中的占比
-	factor = 0.3;
-	while (factor<=0.5)
+	factor = 0.34;
+	while (factor<=0.36)
 	{
 		printf("**********\nfractor=%f\n", factor);
 		tempm = m0;
@@ -316,7 +316,7 @@ void test_GA_factor()
 		{
 			printf("无法完成第一段轨迹转移\n");
 			fprintf(fid, "%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400);
-			factor += 0.01;
+			factor += 0.001;
 			continue;
 		}
 		// 燃料最优飞越
@@ -367,7 +367,7 @@ void test_GA_factor()
 		{
 			printf("剩余时间无法完成第二段轨迹转移\n");
 			fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400);
-			factor += 0.01;
+			factor += 0.001;
 			continue;
 		}
 		// 燃料最优交会
@@ -380,7 +380,7 @@ void test_GA_factor()
 
 		fprintf(fid, "%f\t%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400, Out4[0]*MUnit);
 
-		factor += 0.01;
+		factor += 0.001;
 	}
 	fclose(fid);
 }

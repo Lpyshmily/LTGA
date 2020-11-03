@@ -44,4 +44,11 @@ Low-thrust Gravity-assist
         
             运行结果为[info_4.txt](LTGA_2/LTGA_2/info_4.txt)，和[info_3.txt](LTGA_2/LTGA_2/info_3.txt)相同。
 
+            因此，后续都采用重复10次。
+        
+        4. 在比例系数为0.34~0.36的范围内，以0.001为间隔，进行更详细的搜索。
+
+            运行结果为[info_5.txt](LTGA_2/LTGA_2/info_5.txt)
+
+            比例系数为0.347时，剩余质量最大，为 15839.872773 kg。
             
