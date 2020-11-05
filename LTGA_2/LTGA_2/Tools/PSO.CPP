@@ -1,5 +1,12 @@
 #include"PSO.h"
-//wa，工作变量，依次存储PBVAL(Np),GBPOS(D),popvel(Np*D),pop(Np*D),PBPOS(Np*D)
+// 通过PSO使目标函数值最小
+// ObjFun,目标函数
+// xbest,fbest,优化结果
+// D,变量维数
+// Np,种群大小
+// wa，工作变量，大小至少为3*Np*D+Np+D
+// 依次存储PBVAL(Np),GBPOS(D),popvel(Np*D),pop(Np*D),PBPOS(Np*D)
+// 分别表示每个粒子的最优目标函数值,全局最优位置,每个粒子的速度,每个粒子的位置,每个粒子的最优位置
 void PSO(double (*ObjFun)(const double* X, const double* para), double* xbest, double& fbest,const double* para,
 		 int D, int Np, double* wa, int ItMax, int ItOut, double OmegaMin, double OmegaMax, double C1Min, double C1Max,
 		 double C2Min, double C2Max, double Vmax)
@@ -11,6 +18,15 @@ void PSO(double (*ObjFun)(const double* X, const double* para), double* xbest, d
 	for(int j=0;j<Np;j++)
 		wa[s[0]+j]= 1.0e10;//PBVAL[j]= 1.0e10;
 	GBVAL = 1.0e10;
+
+	// **********
+	// 设置xbest,fbest为初始近优解
+	for(int j=0;j<D;j++)
+		wa[s[1]+j]= xbest[j];//PBVAL[j]= xbest[j];
+	fbest = ObjFun(xbest, para);
+	GBVAL = fbest;
+	// **********
+
 	for(i=0;i<Np;i++)
 	{   
 		for(j=0;j<D;j++)
@@ -25,22 +41,26 @@ void PSO(double (*ObjFun)(const double* X, const double* para), double* xbest, d
 	ct=1;
 	while(ct<=ItMax)
 	{	
+		#pragma omp parallel for schedule(dynamic)
 		for(i=0;i<Np;i++)
 		{
 			index=i*D;
 			val=ObjFun(&wa[s[3]+index],para);//val=ObjFun(pop[i],para);
-			if (val< wa[s[0]+i])//if (val< PBVAL[i])
+			#pragma omp critical
 			{
-				wa[s[0]+i]=val;//PBVAL[i]=val;
-				for(int j=0;j<D;j++)
-					wa[s[4]+index+j]=wa[s[3]+index+j];//PBPOS[i][j]=pop[i][j];
+				if (val< wa[s[0]+i])//if (val< PBVAL[i])
+				{
+					wa[s[0]+i]=val;//PBVAL[i]=val;
+					for(j=0;j<D;j++)
+						wa[s[4]+index+j]=wa[s[3]+index+j];//PBPOS[i][j]=pop[i][j];
 				
-			}
-			if (val< GBVAL)
-			{
-				GBVAL=val;
-				for(j=0;j<D;j++)
-					wa[s[1]+j]=wa[s[3]+index+j];//GBPOS[j]=pop[i][j];
+				}
+				if (val< GBVAL)
+				{
+					GBVAL=val;
+					for(j=0;j<D;j++)
+						wa[s[1]+j]=wa[s[3]+index+j];//GBPOS[j]=pop[i][j];
+				}
 			}
 		}
 		Omega=OmegaMax-(OmegaMax-OmegaMin)/ItMax*ct;
