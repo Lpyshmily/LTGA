@@ -2,6 +2,12 @@
 
 Low-thrust Gravity-assist
 
+* [LTGA_1](#LTGA_1)
+
+* [LTGA_2](#LTGA_2)
+
+* [LTGA_3](LTGA_3.md)
+
 * LTGA_1
 
     用传统间接法求解小推力引力辅助问题。
