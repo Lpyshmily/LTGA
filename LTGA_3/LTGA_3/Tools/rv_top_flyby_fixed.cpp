@@ -107,7 +107,7 @@ int solve_rv_top_flyby_fixed(double* Out, const double* rv0, const double* rvf, 
 		x[6] = cos(angle[0])*cos(angle[1])*sin(angle[2])*sin(angle[4]);
 		x[7] = cos(angle[0])*sin(angle[1]);
 
-		x[8] = (double)rand()/RAND_MAX*10*M_2PI;
+		x[8] = (double)rand()/RAND_MAX*5*M_2PI;
 		
 		info = hybrd1(fvec_rv_top_flyby_fixed, n, x, fvec, sfpara, wa, xtol, 20, 2000);
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)
