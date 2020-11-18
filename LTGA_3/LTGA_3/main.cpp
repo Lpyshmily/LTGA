@@ -88,7 +88,8 @@ double GA_obj_planar(const double* x, const double* para)
 	
 
 	// 引力辅助
-	
+	// 错误模型
+	/*
 	double vin[3] = {0.0}, vout[3] = {0.0}, vm[3] = {0.0}, tempV1[3] = {0.0}, tempV2[3] = {0.0};
 	double temp, norm_vm;
 
@@ -104,8 +105,9 @@ double GA_obj_planar(const double* x, const double* para)
 	double norm_vin = V_Norm2(vin, 3);
 	double delta = acos(V_Dot(vin, vout, 3)/(norm_vin*norm_vin));
 	double rp = muNU_MARS*(1.0/sin(delta/2) - 1.0)/(norm_vin*norm_vin);
+	*/
 	
-	/*
+	// 正确模型
 	// 已知引力辅助半径时的引力辅助
 	double vin[3] = {0.0}, vout[3] = {0.0}, vm[3] = {0.0}, unit1[3] = {0.0}, unit2[3] = {0.0}, unit3[3] = {0.0}, tempVec[3] = {0.0};
 	double delta, norm_vin, temp;
@@ -124,7 +126,7 @@ double GA_obj_planar(const double* x, const double* para)
 	{
 		vout[i] = norm_vin*(cos(delta)*unit1[i] + sin(delta)*unit2[i] + 0.0*unit3[i]);
 	}
-	*/
+	
 
 
 	// 第二段 用temprv表示引力辅助后的位置速度
@@ -152,7 +154,6 @@ double GA_obj_planar(const double* x, const double* para)
 	if (shortest2 > t2)
 	{
 		printf("剩余时间无法完成第二段轨迹转移\n");
-		// fprintf(fid, "%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400);
 		return MaxNum;
 	}
 	// 燃料最优交会
@@ -165,10 +166,27 @@ double GA_obj_planar(const double* x, const double* para)
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out4[i]);
 
-	// fprintf(fid, "%f\t%f\t%f\t%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400, t2*TUnit/86400, shortest2*TUnit/86400, Out4[0]*MUnit);
-
-	// fclose(fid);
 	return -Out4[0]*MUnit;
+}
+
+// 给定一系列x的值，依次计算
+void GA_list()
+{
+	time_t now = time(NULL);
+	char filename[30];
+	sprintf(filename, "info_%d.txt", now);
+	FILE *fid = fopen(filename, "w");
+
+	double factor = 0.33, mf;
+	while (factor<=0.35+1e-3)
+	{
+		printf("**********\nfractor=%f\n", factor);
+		mf = GA_obj_planar(&factor, NULL);
+		fprintf(fid, "%f\t%f\n", factor, mf);
+		factor += 0.001;
+	}
+
+	fclose(fid);
 }
 
 int main()
@@ -178,8 +196,10 @@ int main()
 	clock_t start, stop;
 	start = clock();
 
-	double factor = 0.347;
+	double factor = 0.344;
 	printf("obj返回值：%f\n", GA_obj_planar(&factor, NULL));
+
+	// GA_list();
 
 	stop = clock();
 	printf("计算用时为：%.3fs\n", (double)(stop-start)/CLOCKS_PER_SEC);
