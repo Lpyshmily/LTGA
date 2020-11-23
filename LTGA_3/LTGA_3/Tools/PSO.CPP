@@ -20,11 +20,13 @@ void PSO(double (*ObjFun)(const double* X, const double* para), double* xbest, d
 	GBVAL = 1.0e10;
 
 	// **********
+	/*
 	// 设置xbest,fbest为初始近优解
 	for(int j=0;j<D;j++)
 		wa[s[1]+j]= xbest[j];//PBVAL[j]= xbest[j];
 	fbest = ObjFun(xbest, para);
 	GBVAL = fbest;
+	*/
 	// **********
 
 	for(i=0;i<Np;i++)
