@@ -10,6 +10,8 @@
 
 * [5th version](#20201123-5th-version)
 
+* [6th version](#20201124-6th-version)
+
 ## 20201117 1st version
 
 复制LTGA_2，进行`factor=0.34`的简单测试，程序可以正常运行。
@@ -79,3 +81,19 @@
     运行结果：引力辅助时间为0.343852，引力辅助半径为1.000017*最小引力辅助半径，旋转角为=0.469045pi，剩余质量为15842.234388kg。
 
     PSO提升幅度有限，还是需要从方法上寻求突破。
+
+## 20201124 6th version
+
+学习使用非线性规划程序包NPSOL。
+
+用NPSOL求解三变量的引力辅助优化问题，程序中出现严重bug，查找原因是头文件的顺序导致错误，目前已改正，错误文件保存为[wrong.cpp](LTGA_3/LTGA_3/wrong.cpp)。
+
+目前程序可以正常运行，但是只在初值附近进行了几次计算就终止，终止原因是
+
+> Exit NPSOL - Large errors found in the derivatives.
+
+程序运行中间也出现
+
+> XXX  The objective gradients seem to be incorrect.
+
+意思大致是**目标函数的梯度太大**，目前还没有解决办法。

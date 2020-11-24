@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include "localConst.h"
+#include "nlp.h"
 
 celestial_body Mars(-1, 60389, 1.52363312, 0.09327933, 1.84785414*D2R, 49.48935357*D2R, 286.67090811*D2R, 328.88755274*D2R, 0, 0); // 真近点角f
 
@@ -558,7 +559,9 @@ int main()
 	// double x_test[3] = {0.8, 0.0, 0.6}; // 对应引力辅助时间0.34，引力辅助半径rmin，旋转角0.6pi
 	// printf("obj返回值：%f\n", GA_obj_PSO(x_test, NULL));
 
-	GA_PSO();
+	// GA_PSO();
+
+	test_nlp();
 
 	stop = clock();
 	printf("计算用时为：%.3fs\n", (double)(stop-start)/CLOCKS_PER_SEC);
