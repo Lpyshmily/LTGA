@@ -165,6 +165,10 @@ bool fnobj(int n, const double* x, double& objf)
 		return true;
 	}
 	printf("求解成功%d\n",flag);
+	printf("**********\n");
+	printf("x[0]=%f\n", x[0]);
+	printf("x[1]=%f\n", x[1]);
+	printf("x[2]=%f\n", x[2]);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
@@ -214,7 +218,7 @@ void test_nlp()
 	bu[2] = 1.0;
 
 	//初值
-	double x[3]={0.8, 0.1, 0.45};
+	double x[3]={0.87704,0.000017,0.469045};
 	inform=NPSol(x, objf, n, nclin, ncnln, AM, bl, bu);
 	//输出最优结果和指标及计算成功与否姿态标识
 	for(i=0;i<n;i++) printf("x[%d]=%.12e,\n",i,x[i]);

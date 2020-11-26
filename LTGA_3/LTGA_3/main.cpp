@@ -556,7 +556,7 @@ int main()
 
 	// GA_triple_list();
 
-	// double x_test[3] = {0.8, 0.0, 0.6}; // 对应引力辅助时间0.34，引力辅助半径rmin，旋转角0.6pi
+	// double x_test[3] = {0.87704,0.0,0.469045}; // 对应引力辅助时间0.34，引力辅助半径rmin，旋转角0.6pi
 	// printf("obj返回值：%f\n", GA_obj_PSO(x_test, NULL));
 
 	// GA_PSO();

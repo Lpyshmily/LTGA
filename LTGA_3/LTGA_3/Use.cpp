@@ -6,8 +6,8 @@ int npsolfnobj(int* mode, int& n, double* x, double* objf, double* objgrd, int& 
 	bool flag=false;
 	flag=fnobj(n, x, *objf);
 	if(!flag)	*mode=-1;//如果指标计算不成功，将mode的值置为负数，npsol_调用时会按异常处理
-	objgrd[0]=-400.0*(x[1]-x[0]*x[0])*x[0]-2.0*(1.0-x[0]);
-	objgrd[1]=200.0*(x[1]-x[0]*x[0]);	
+	// objgrd[0]=-400.0*(x[1]-x[0]*x[0])*x[0]-2.0*(1.0-x[0]);
+	// objgrd[1]=200.0*(x[1]-x[0]*x[0]);	
 	return 0;//npsol_调用时要求返回整数
 }
 
@@ -17,10 +17,10 @@ int npsolfncon(int* mode, int &ncnln, int& n, int& ldJ, int* needc, double* x, d
 	bool flag=false;
 	flag=fncon(n, ncnln, x, nlc);
 	if(!flag)	*mode=-1;//如果指标计算不成功，将mode的值置为负数，npsol_调用时会按异常处理	
-	cJac[0]=2.0*(x[0]-1.0/3.0);
-	cJac[1]=x[1];
-	cJac[2]=2.0*(x[1]-1.0/3.0);
-	cJac[3]=x[0];
+	// cJac[0]=2.0*(x[0]-1.0/3.0);
+	// cJac[1]=x[1];
+	// cJac[2]=2.0*(x[1]-1.0/3.0);
+	// cJac[3]=x[0];
 	return 0;//npsol_调用时要求返回整数
 }
 
