@@ -525,6 +525,39 @@ double GA_obj_PSO(const double* x, const double* para)
 	return -Out4[0]*MUnit;
 }
 
+void GA_obj_PSO_list()
+{
+	time_t now = time(NULL);
+	char filename[30];
+	sprintf(filename, "info_%d.txt", now);
+	FILE *fid = fopen(filename, "w");
+
+	double x[3] = {0.0};
+	double mf = 0.0;
+	int i, j, k;
+	for (i=0;i<=10;++i) // 100 100 100
+	{
+		for (j=0;j<=10;++j)
+		{
+			for (k=0;k<=10;++k)
+			{
+				x[0] = i*0.1;
+				x[1] = j*0.1;
+				x[2] = k*0.1;
+				printf("**********\n");
+				printf("factor=%f\n", x[0]);
+				printf("rp=%f\n", x[1]);
+				printf("angle=%f\n", x[2]);
+				mf = GA_obj_PSO(x, NULL);
+				fprintf(fid, "%f\t%f\t%f\t%f\n", x[0], x[1], x[2], mf);
+			}
+			fprintf(fid, "\n");
+		}
+	}
+
+	fclose(fid);
+}
+
 void GA_PSO()
 {
 	double xbest[3] = {0.0}, fbest;
@@ -559,9 +592,11 @@ int main()
 	// double x_test[3] = {0.87704,0.0,0.469045}; // 对应引力辅助时间0.34，引力辅助半径rmin，旋转角0.6pi
 	// printf("obj返回值：%f\n", GA_obj_PSO(x_test, NULL));
 
+	GA_obj_PSO_list();
+
 	// GA_PSO();
 
-	test_nlp();
+	// test_nlp();
 
 	stop = clock();
 	printf("计算用时为：%.3fs\n", (double)(stop-start)/CLOCKS_PER_SEC);
