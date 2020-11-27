@@ -211,7 +211,7 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	
 	int i, j, flag;
 	printf("**********\n");
-	for (i=0;i<3;++i)
+	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
 	// 初始条件设定与归一化
@@ -279,7 +279,10 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	// 燃料最优交会
 	flag = solve_rv_fop_rend(Out2, rv0, rv_before, tempm, t1, epsi, MaxGuessNum);
 	if (!flag)
+	{
+		printf("第一段燃料最优交会问题不收敛\n");
 		return MaxNum;
+	}
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
 	printf("打靶变量值为:\n");
@@ -338,15 +341,19 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	// 燃料最优交会
 	flag = solve_rv_fop_rend(Out4, rv_after, rv1, tempm, t2, epsi, MaxGuessNum);
 	if (!flag)
+	{
+		printf("第二段燃料最优交会问题不收敛\n");
 		return MaxNum;
+	}
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out4[i]);
+
 	printf("**********\n");
 	printf("迭代次数 i=%d\n", ++global_count);
-	for (i=0;i<3;++i)
+	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
 
@@ -355,6 +362,27 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 
 void test_GA_obj_nlopt_6()
 {
-	double x_test[6] = {0.876959627917576,0.0,0.471123454181230, 0.201, 0.3573, 0.6245};
+	// double x_test[6] = {0.876959627917576,0.0,0.471123454181230, 0.201, 0.3573, 0.6245};
+	double x_test[6] = {0.8754359,0.0,0.4370229,0.2028572463,0.3,0.623};
 	printf("obj返回值：%f\n", GA_obj_nlopt_6(6, x_test, NULL, NULL));
+}
+
+void GA_nlopt_6()
+{
+	double f_min = 0;
+	double tol = 1e-5;
+	double x[6] = {0.876959627917576,0.0,0.471123454181230, 0.201, 0.3573, 0.6245};
+	double lb[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	double rb[6] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+
+	nlopt_opt opter = nlopt_create(NLOPT_LN_COBYLA, 6);
+	nlopt_set_min_objective(opter, GA_obj_nlopt_6, NULL);
+	nlopt_set_lower_bounds(opter, lb);
+	nlopt_set_upper_bounds(opter, rb);
+	nlopt_set_xtol_rel(opter, tol);
+
+	nlopt_result res = nlopt_optimize(opter, x, &f_min);
+	for (int i=0;i<6;++i)
+		printf("%.15f,\n", x[i]);
+	printf("最小值为%.15f\n", f_min);
 }

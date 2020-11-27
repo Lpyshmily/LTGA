@@ -8,5 +8,6 @@ int main()
 	// GA_nlopt();
 
 	test_GA_obj_nlopt_6();
+	// GA_nlopt_6();
 	return 0;
 }
