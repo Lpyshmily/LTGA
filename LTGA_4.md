@@ -1,5 +1,7 @@
 # LTGA_4
 
+使用**NLOPT**优化器进行优化。
+
 * [1st version](#20201126-1st-version)
 
 ## 20201126 1st version
