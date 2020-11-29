@@ -247,7 +247,7 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 
 
 	// 求解算法的一些参数设置
-	int MaxGuessNum = 100;//设置最大随机猜测次数
+	int MaxGuessNum = 1000;//设置最大随机猜测次数
 	srand( (unsigned)time( NULL ) );//设定随机数种子，若没有此设置，每次产生一样的随机数
 
 	// 求解
@@ -385,4 +385,47 @@ void GA_nlopt_6()
 	for (int i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("最小值为%.15f\n", f_min);
+}
+
+
+double GA_obj_PSO_6(const double* x, const double* para)
+{
+	return GA_obj_nlopt_6(6, x, NULL, NULL);
+}
+
+void GA_PSO_6()
+{
+	double xbest[6] = {0.0};
+	double fbest;
+	int D, Np;
+	D = 6;
+	Np = 20;
+	double wa[400];
+	PSO(GA_obj_PSO_6, xbest, fbest, NULL, D, Np, wa);
+	for (int i=0;i<D;++i)
+		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
+	printf("fbest=%.15f\n", fbest);
+}
+
+double GA_obj_PSO_6_new(const double* x, const double* para)
+{
+	double x_nlopt[6] = {0.0};
+	V_Copy(x_nlopt, x, 6);
+	x_nlopt[0] = x[0]*2;
+	
+	return GA_obj_nlopt_6(6, x_nlopt, NULL, NULL);
+}
+
+void GA_PSO_6_new()
+{
+	double xbest[6] = {0.0};
+	double fbest;
+	int D, Np;
+	D = 6;
+	Np = 20;
+	double wa[400];
+	PSO(GA_obj_PSO_6_new, xbest, fbest, NULL, D, Np, wa);
+	for (int i=0;i<D;++i)
+		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
+	printf("fbest=%.15f\n", fbest);
 }
