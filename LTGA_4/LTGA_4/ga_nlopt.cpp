@@ -278,6 +278,7 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	}
 	// 燃料最优交会
 	flag = solve_rv_fop_rend(Out2, rv0, rv_before, tempm, t1, epsi, MaxGuessNum);
+	// flag = homotopy_rv_fop_rend(Out2, rv0, rv_before, tempm, t1, MaxGuessNum);
 	if (!flag)
 	{
 		printf("第一段燃料最优交会问题不收敛\n");

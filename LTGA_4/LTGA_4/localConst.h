@@ -3,7 +3,7 @@
 
 #include "Tools\tools.h"
 
-celestial_body Mars(-1, 60389, 1.52363312, 0.09327933, 1.84785414*D2R, 49.48935357*D2R, 286.67090811*D2R, 328.88755274*D2R, 0, 0); // 真近点角f
+extern celestial_body Mars;
 
 // 甩摆行星参数赋值
 const double RU_MARS = 3389.9e3/LUnit; // 火星半径
