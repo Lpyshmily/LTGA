@@ -240,7 +240,7 @@ int hybrd(int(* fcnnn)(int n, const double *x, double *fvec, int iflag, const do
 
 /*     evaluate the function at the starting point */
 /*     and calculate its norm. */
-	printf("%5s%6s%9s%11s\n", "iter.","nfev","f(x)","step");
+	// printf("%5s%6s%9s%11s\n", "iter.","nfev","f(x)","step");
 
     iflag = fcnnn(n, &x[1], &fvec[1], 1, para);
     *nfev = 1;

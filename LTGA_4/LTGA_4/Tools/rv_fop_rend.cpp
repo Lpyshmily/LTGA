@@ -110,7 +110,7 @@ int solve_rv_fop_rend(double* Out, const double* rv0, const double* rvf, double 
 		x[6] = cos(angle[0])*cos(angle[1])*sin(angle[2])*sin(angle[4]);
 		x[7] = cos(angle[0])*sin(angle[1]);
 		
-		info = hybrd1(fvec_rv_fop_rend, n, x, fvec, sfpara, wa, xtol, 20, 2000);
+		info = hybrd1(fvec_rv_fop_rend, n, x, fvec, sfpara, wa, xtol, -1, 2000);
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)
 		{
 			sfpara[15]=1.0;
@@ -126,7 +126,7 @@ int solve_rv_fop_rend(double* Out, const double* rv0, const double* rvf, double 
 		}
 		num++;
 	}
-	printf("随机猜测次数：%d\n", num);
+	// printf("随机猜测次数：%d\n", num);
 	return flag;
 }
 

@@ -210,10 +210,12 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	double vin[3] = {x[3]*0.2-0.1, x[4]*0.2-0.1, x[5]*0.2-0.1}; // 引力辅助前的相对速度
 	
 	int i, j, flag;
+	/*
 	printf("**********\n");
 	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
+	*/
 	// 初始条件设定与归一化
 	// 初始、末端位置和速度，单位分别为AU和AU/a
 	double rv0[6] = { 5.876420e-1, 7.954627e-1, -3.845203e-5, -5.155764, 3.707833, -3.191945e-4 };
@@ -247,7 +249,7 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 
 
 	// 求解算法的一些参数设置
-	int MaxGuessNum = 1000;//设置最大随机猜测次数
+	int MaxGuessNum = 5000;//设置最大随机猜测次数
 	srand( (unsigned)time( NULL ) );//设定随机数种子，若没有此设置，每次产生一样的随机数
 
 	// 求解
@@ -255,24 +257,26 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	// 时间最优交会
 	for (j=0;j<RepeatTime;++j)
 	{
-		printf("第%d次求解第一段时间最优交会问题\n", j+1);
+		// printf("第%d次求解第一段时间最优交会问题\n", j+1);
 		flag = solve_rv_top_rend_fixed(Out1, rv0, rv_before, tempm, MaxGuessNum);
 		if (!flag)
 			return MaxNum;
+		/*
 		printf("求解成功%d\n",flag);
 		printf("剩余质量为:%.3fkg\n", Out1[0]*MUnit);
 		printf("转移时间为:%.3f天\n", Out1[9]*TUnit/86400);
 		printf("打靶变量值为:\n");
 		for (i=1; i<10; i++)
 			printf("%.15e,\n", Out1[i]);
+		*/
 		if (Out1[9] < shortest1)
 			shortest1 = Out1[9];
 	}
-	printf("最短转移时间为:%.3f天\n", shortest1*TUnit/86400);
+	// printf("最短转移时间为:%.3f天\n", shortest1*TUnit/86400);
 	// 判断能否完成第一段转移
 	if (shortest1 > t1)
 	{
-		printf("无法完成第一段轨迹转移\n");
+		// printf("无法完成第一段轨迹转移\n");
 		// fprintf(fid, "%f\t%f\t%f\n", factor, t1*TUnit/86400, shortest1*TUnit/86400);
 		return MaxNum;
 	}
@@ -281,14 +285,16 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	// flag = homotopy_rv_fop_rend(Out2, rv0, rv_before, tempm, t1, MaxGuessNum);
 	if (!flag)
 	{
-		printf("第一段燃料最优交会问题不收敛\n");
+		// printf("第一段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out2[i]);
+	*/
 	
 
 	// 引力辅助
@@ -319,33 +325,36 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	// 时间最优交会
 	for (j=0;j<RepeatTime;++j)
 	{
-		printf("第%d次求解第二段时间最优交会问题\n", j+1);
+		// printf("第%d次求解第二段时间最优交会问题\n", j+1);
 		flag = solve_rv_top_rend_fixed(Out3, rv_after, rv1, tempm, MaxGuessNum);
 		if (!flag)
 			return MaxNum;
+		/*
 		printf("求解成功%d\n",flag);
 		printf("剩余质量为:%.3fkg\n", Out3[0]*MUnit);
 		printf("转移时间为:%.3f天\n", Out3[9]*TUnit/86400);
 		printf("打靶变量值为:\n");
 		for (i=1; i<10; i++)
 			printf("%.15e,\n", Out3[i]);
+			*/
 		if (Out3[9] < shortest2)
 			shortest2 = Out3[9];
 	}
-	printf("最短转移时间为:%.3f天\n", shortest2*TUnit/86400);
+	// printf("最短转移时间为:%.3f天\n", shortest2*TUnit/86400);
 	// 判断能否完成第二段转移
 	if (shortest2 > t2)
 	{
-		printf("剩余时间无法完成第二段轨迹转移\n");
+		// printf("剩余时间无法完成第二段轨迹转移\n");
 		return MaxNum;
 	}
 	// 燃料最优交会
 	flag = solve_rv_fop_rend(Out4, rv_after, rv1, tempm, t2, epsi, MaxGuessNum);
 	if (!flag)
 	{
-		printf("第二段燃料最优交会问题不收敛\n");
+		// printf("第二段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
@@ -357,6 +366,7 @@ double GA_obj_nlopt_6(unsigned n, const double* x, double* grad, void* para)
 	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
+	*/
 
 	return -Out4[0]*MUnit;
 }
@@ -401,8 +411,7 @@ void GA_PSO_6()
 	int D, Np;
 	D = 6;
 	Np = 20;
-	double wa[400];
-	PSO(GA_obj_PSO_6, xbest, fbest, NULL, D, Np, wa);
+	PSO(GA_obj_PSO_6, xbest, fbest, NULL, D, Np);
 	for (int i=0;i<D;++i)
 		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
 	printf("fbest=%.15f\n", fbest);
@@ -423,9 +432,8 @@ void GA_PSO_6_new()
 	double fbest;
 	int D, Np;
 	D = 6;
-	Np = 20;
-	double wa[400];
-	PSO(GA_obj_PSO_6_new, xbest, fbest, NULL, D, Np, wa);
+	Np = 40;
+	PSO(GA_obj_PSO_6_new, xbest, fbest, NULL, D, Np);
 	for (int i=0;i<D;++i)
 		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
 	printf("fbest=%.15f\n", fbest);

@@ -107,7 +107,7 @@ int solve_rv_top_rend_fixed(double* Out, const double* rv0, const double* rvf, d
 
 		x[8] = (double)rand()/RAND_MAX*5*M_2PI;
 		
-		info = hybrd1(fvec_rv_top_rend_fixed, n, x, fvec, sfpara, wa, xtol, 20, 2000);
+		info = hybrd1(fvec_rv_top_rend_fixed, n, x, fvec, sfpara, wa, xtol, -1, 2000);
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)
 		{
 			sfpara[13]=1.0;
@@ -123,6 +123,6 @@ int solve_rv_top_rend_fixed(double* Out, const double* rv0, const double* rvf, d
 		}
 		num++;
 	}
-	printf("随机猜测次数：%d\n", num);
+	// printf("随机猜测次数：%d\n", num);
 	return flag;
 }
