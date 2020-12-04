@@ -13,4 +13,8 @@ void GA_PSO_6();
 double GA_obj_PSO_6_new(const double* x, const double* para);
 void GA_PSO_6_new();
 
+double GA_obj_nlopt_6_new(unsigned n, const double* x, double* grad, void* para);
+void test_GA_obj_nlopt_6_new();
+void GA_nlopt_6_new();
+
 #endif
