@@ -107,13 +107,13 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第一段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	/*
+	
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out2[i]);
-	*/
+	
 	
 
 	// 引力辅助
@@ -180,22 +180,35 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第二段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	/*
+	
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out4[i]);
-
-	printf("**********\n");
-	printf("迭代次数 i=%d\n", ++global_count);
-	for (i=0;i<6;++i)
-		printf("%.15f,\n", x[i]);
-	printf("**********\n");
-	*/
+	
 
 	// nlopt时输出，PSO时不输出
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
+
+	// output需要的数据
+	printf("rv0:\n");
+	for (i=0;i<6;++i)
+		printf("%.15f\n", rv0[i]);
+	printf("rv_before:\n");
+	for (i=0;i<6;++i)
+		printf("%.15f\n", rv_before[i]);
+	printf("rv_after:\n");
+	for (i=0;i<6;++i)
+		printf("%.15f\n", rv_after[i]);
+	printf("rv1:\n");
+	for (i=0;i<6;++i)
+		printf("%.15f\n", rv1[i]);
+	printf("t1:%.15f\n", t1);
+	printf("t2:%.15f\n", t2);
+	printf("m1:%.15f\n", m0);
+	printf("m2:%.15f\n", tempm);
+
 	return -Out4[0]*MUnit;
 }
 
@@ -249,6 +262,128 @@ void GA_nlopt()
 	printf("最小值为%.15f\n", f_min);
 }
 
-void output_info()
+void output_ode()
 {
+	// 需要提前对rv_fop_rend.cpp文件名称进行改动
+	// 需要确定打靶变量
+	printf("输出积分过程信息\n");
+	double rv0[6] = {0.587642000000000,0.795462700000000,-0.000038452030000,-0.820580823694579,0.590131095461690,-0.000050802341948};
+	double rv_before[6] = {0.785122098448566,-1.157915016177971,-0.043524651865926,0.758861072171299,0.419239168514373,-0.001528616508470};
+	double rv_after[6] = {0.785122098448566,-1.157915016177971,-0.043524651865926,0.823166898923659,0.509786445169425,-0.003389557797740};
+	double rv1[6] = {-5.204974000000000,1.495369000000000,0.110244400000000,-0.126321626888245,-0.401565532241840,0.004493379047356};
+	double t1 = 14.682743622728498;
+	double t2 = 23.179076166223364;
+	double m1 = 1.000000000000000;
+	double m2 = 0.913380468124813;
+	double epsi = 1.0e-5;
+	int flag, MaxGuessNum = 500;
+	double Out[9] = {0.0}; // 燃料最优交会输出结果，[0]剩余质量，[1-8]8个需要打靶的协态初值
+
+	// 第一段
+	// flag = solve_rv_fop_rend(Out, rv0, rv_before, m1, t1, epsi, MaxGuessNum);
+	// 第二段
+	flag = solve_rv_fop_rend(Out, rv_after, rv1, m2, t2, epsi, MaxGuessNum);
+}
+
+void output_u()
+{
+	double x1[14] = {0.587642000000000,0.795462700000000,-0.000038452030000,-0.820580823694579,0.590131095461690,-0.000050802341948,1.000000000000000,-2.443289425469893e-001,-3.388805570248314e-001,-3.685229465217167e-002,3.223612567425680e-001,-2.402788863810115e-001,-9.699340788212746e-002,7.501358724377988e-002};
+	double x2[14] = {0.785122098448566,-1.157915016177971,-0.043524651865926,0.823166898923659,0.509786445169425,-0.003389557797740,0.913380468124813,-1.273152789553519e-001,2.120126113944062e-001,-6.022980525892011e-003,-3.820774629894042e-001,-2.637371289846143e-001,1.664044729452408e-003,1.161888933616963e-001};
+	double x1_original[14], x2_original[14];
+	V_Copy(x1_original, x1, 14);
+	V_Copy(x2_original, x2, 14);
+	double epsi = 1.0e-5, lam01 = 8.046239878045387e-001, lam02 = 8.424738020525979e-001;
+	double t1 = 14.682743622728498;
+	double t2 = 23.179076166223364;
+	int flag, NumPoint;
+	double work[140]={0.0};
+
+	// 第一段
+	/*
+	time_t now = time(NULL);
+	char filename[30];
+	sprintf(filename, "u_%d.txt", now);
+	FILE *ufid = fopen(filename, "w");
+	FILE *fid = NULL;
+
+	int TimeNodeNum = 1000;
+	double* TimeNode = new double[TimeNodeNum];
+	double seg = t1/TimeNodeNum;
+	for (int i=0;i<TimeNodeNum;++i)
+		TimeNode[i] = seg*i;
+	TimeNode[TimeNodeNum-1] = t1;
+
+	double dfpara[2] = {0.0};
+	dfpara[0] = epsi;
+	dfpara[1] = lam01;
+
+	double AbsTol[14] = {0.0};
+	for(int i=0;i<14;i++)
+		AbsTol[i]=1e-12;
+	double RelTol=1e-12;
+
+	double norm_lambdaV, rou, u;
+
+	for (int i=0;i<TimeNodeNum;++i)
+	{
+		V_Copy(x1, x1_original, 14);
+		// 积分到第i个时间节点
+		flag = ode45(dynamics_rv_fop, x1, dfpara, 0.0, TimeNode[i], 14, NumPoint, work, AbsTol, RelTol, 0, -1, -1, fid);
+		norm_lambdaV = V_Norm2(&x1[10], 3); // 速度协态的范数
+		rou=1.0-(Ispg0NU*norm_lambdaV/x1[6] + x1[13])/lam01; // 开关函数
+		if (rou > epsi)
+			u = 0.0;
+		else if (rou < -epsi)
+			u = 1.0;
+		else
+			u = 0.5 - rou/(2*epsi);
+		fprintf(ufid, "%.6f, %.6f\n", TimeNode[i], u);
+	}
+	fclose(ufid);
+	delete[] TimeNode;
+	*/
+
+	// 第二段
+	time_t now = time(NULL);
+	char filename[30];
+	sprintf(filename, "u_%d.txt", now);
+	FILE *ufid = fopen(filename, "w");
+	FILE *fid = NULL;
+
+	int TimeNodeNum = 1000;
+	double* TimeNode = new double[TimeNodeNum];
+	double seg = t2/TimeNodeNum;
+	for (int i=0;i<TimeNodeNum;++i)
+		TimeNode[i] = seg*i;
+	TimeNode[TimeNodeNum-1] = t2;
+
+	double dfpara[2] = {0.0};
+	dfpara[0] = epsi;
+	dfpara[1] = lam02;
+
+	double AbsTol[14] = {0.0};
+	for(int i=0;i<14;i++)
+		AbsTol[i]=1e-12;
+	double RelTol=1e-12;
+
+	double norm_lambdaV, rou, u;
+
+	for (int i=0;i<TimeNodeNum;++i)
+	{
+		V_Copy(x2, x2_original, 14);
+		// 积分到第i个时间节点
+		flag = ode45(dynamics_rv_fop, x2, dfpara, 0.0, TimeNode[i], 14, NumPoint, work, AbsTol, RelTol, 0, -1, -1, fid);
+		norm_lambdaV = V_Norm2(&x2[10], 3); // 速度协态的范数
+		rou=1.0-(Ispg0NU*norm_lambdaV/x2[6] + x2[13])/lam02; // 开关函数
+		if (rou > epsi)
+			u = 0.0;
+		else if (rou < -epsi)
+			u = 1.0;
+		else
+			u = 0.5 - rou/(2*epsi);
+		fprintf(ufid, "%.6f, %.6f\n", TimeNode[i], u);
+	}
+	fclose(ufid);
+
+	delete[] TimeNode;
 }

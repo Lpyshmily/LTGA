@@ -7,4 +7,7 @@ void test_GA_obj_PSO();
 void GA_PSO();
 void GA_nlopt();
 
+void output_ode();
+void output_u();
+
 #endif
