@@ -9,58 +9,52 @@ int global_count = 0;
 // x[6] 0-引力辅助时间 1-引力辅助半径 2-vout方向角 3-5 引力辅助前相对速度vin的3个分量
 // 求解两段燃料最优交会问题
 // 三个分量的变化范围均为0-1，对应以下不同含义
-// 引力辅助时间指第引力辅助前第一段轨迹的转移时间，变化范围为[0.3,0.4]tf
+// 引力辅助时间指第引力辅助前第一段轨迹的转移时间，变化范围为[0.0,1.0]tf
 // 引力辅助半径变化范围为[1,2]rmin
 // vout方向角指vout和vin、vp组成的平面的夹角，变化范围为[0,pi]
-// vin3个分量的变化范围均为[-0.2,0.2]
+// vin3个分量的变化范围均为[-0.5,0.5]
 // para NULL
 double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 {
-	// Tools.h/constants.h
-	// Isp=6000 Tmax=2.26 m0=20000
-
-	double factor = x[0]*0.1 + 0.3;
-	double rp = rminU_MARS*(x[1] + 1.0);
-	double phi = x[2]*M_PI;
-	double vin[3] = {x[3]*0.4-0.2, x[4]*0.4-0.2, x[5]*0.4-0.2}; // 引力辅助前的相对速度
+	double factor = x[0];
+	double rp = rminU_Earth*(x[1] + 1.0); // rminU_Earth*(x[1] + 1.0)
+	double phi = x[2]*M_PI; // x[2]*M_PI
+	double vin[3] = {x[3]-0.5, x[4]-0.5, x[5]-0.5}; // 引力辅助前的相对速度
 	
 	int i, j, flag;
 	
 	
 	// nlopt时输出，PSO时不输出
+	/*
 	printf("**********\n");
 	printf("迭代次数 i=%d\n", ++global_count);
 	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
-	
+	*/
 	
 	// 初始条件设定与归一化
 	// 初始、末端位置和速度，单位分别为AU和AU/a
-	double rv0[6] = { 5.876420e-1, 7.954627e-1, -3.845203e-5, -5.155764, 3.707833, -3.191945e-4 };
-	double rv1[6] = { -5.204974, 1.495369, 1.102444e-1, -7.936872e-1, -2.523063, 2.823220e-2 };
-	for (i=3;i<6;++i)
-	{
-		rv0[i] = rv0[i]/(365.25*86400)*TUnit;
-		rv1[i] = rv1[i]/(365.25*86400)*TUnit;
-	}
-	double rvm[6] = {0.0}, rv_before[6] = {0.0}, rv_after[6] = {0.0}; // 火星位置速度、引力辅助前的位置速度、引力辅助后的位置速度
+	double rv0[6], rv1[6], rvm[6] = {0.0}, rv_before[6] = {0.0}, rv_after[6] = {0.0}; // 火星位置速度、引力辅助前的位置速度、引力辅助后的位置速度
 	double Out1[10] = {0.0}; // 第一段时间最优交会输出结果，[0]剩余质量，[1-9]9个打靶变量
 	double Out2[9] = {0.0}; // 第一段燃料最优交会输出结果，[0]剩余质量，[1-8]8个需要打靶的协态初值
 	double Out3[10] = {0.0}; // 第二段时间最优交会输出结果，[0]剩余质量，[1-9]9个打靶变量
 	double Out4[9] = {0.0}; // 第二段燃料最优交会输出结果，[0]剩余质量，[1-8]8个打靶变量
-	double m0, tempm, tf, epsi, t1, t2, shortest1, shortest2;
-	tf = 2201*86400/TUnit;
-	epsi = 1.0e-5;
-	m0 = 20000.0/MUnit;
-	const int RepeatTime = 10; // 时间最优重复求解次数
-	
+	double MJD0, MJDf, m0, tempm, tf, epsi, t1, t2, shortest1, shortest2;
+	MJD0 = 57294.0; // 2015.09.29
+	MJDf = 58944.0; // 2020.04.05
+	m0 = 19820.0/MUnit;
 	tempm = m0;
-	shortest1 = MaxNum;// 首先设置成一个很大的值
-	shortest2 = MaxNum;// 首先设置成一个很大的值
+	tf = 1650.0*86400/TUnit;
+	epsi = 1.0e-5;
 	t1 = factor*tf;
 	t2 = (1-factor)*tf;
-	Mars.GetRV(rvm, 59534.0 + t1*TUnit/86400, muNU);
+	shortest1 = MaxNum;// 首先设置成一个很大的值
+	shortest2 = MaxNum;// 首先设置成一个很大的值
+	
+	Earth.GetRV(rv0, MJD0, muNU);
+	Jupiter.GetRV(rv1, MJDf, muNU);
+	Earth.GetRV(rvm, MJD0 + t1*TUnit/86400, muNU);
 
 	V_Copy(rv_before, rvm, 3);
 	for (i=0;i<3;++i)
@@ -80,6 +74,7 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		flag = solve_rv_top_rend_fixed(Out1, rv0, rv_before, tempm, MaxGuessNum);
 		if (!flag)
 			return MaxNum;
+		// printf("转移时间为:%.3f天\n", Out1[9]*TUnit/86400);
 		/*
 		printf("求解成功%d\n",flag);
 		printf("剩余质量为:%.3fkg\n", Out1[0]*MUnit);
@@ -91,7 +86,8 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		if (Out1[9] < shortest1)
 			shortest1 = Out1[9];
 	}
-	// printf("最短转移时间为:%.3f天\n", shortest1*TUnit/86400);
+	// printf("第一段最短转移时间为:%.3f天\n", shortest1*TUnit/86400);
+	// printf("第一段实际转移时间为:%f天\n", t1*TUnit/86400);
 	// 判断能否完成第一段转移
 	if (shortest1 > t1)
 	{
@@ -107,13 +103,14 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第一段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	
+	// printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out2[i]);
-	
+	*/
 	
 
 	// 引力辅助
@@ -129,20 +126,13 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 	V_Divid(unit3, tempVec, temp, 3); // 垂直vin和vm平面的单位向量
 	V_Cross(unit2, unit3, unit1); // j单位矢量
 
-	delta = 2*asin(muNU_MARS/(muNU_MARS + rp*norm_vin*norm_vin));
+	delta = 2*asin(muNU_Earth/(muNU_Earth + rp*norm_vin*norm_vin));
 	for (i=0;i<3;++i)
 	{
 		vout[i] = norm_vin*(cos(delta)*unit1[i] + sin(delta)*sin(phi)*unit2[i] + sin(delta)*cos(phi)*unit3[i]);
 	}
-	// 测试已知最优解时需要
-	/*
-	vout[0] = 0.11925935378439018; vout[1] = -0.016224539415498812; vout[2] = 0.0028024583987117900;
-	double temp1 = V_Dot(vout, unit1, 3)/norm_vin/cos(delta);
-	double temp2 = V_Dot(vout, unit2, 3)/norm_vin/sin(delta);
-	double temp3 = V_Dot(vout, unit3, 3)/norm_vin/sin(delta);
-	*/
-	
 
+	
 
 	// 第二段 用temprv表示引力辅助后的位置速度
 	V_Copy(rv_after, rvm, 3); // 引力辅助后的位置
@@ -155,6 +145,7 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		flag = solve_rv_top_rend_fixed(Out3, rv_after, rv1, tempm, MaxGuessNum);
 		if (!flag)
 			return MaxNum;
+		// printf("转移时间为:%.3f天\n", Out3[9]*TUnit/86400);
 		/*
 		printf("求解成功%d\n",flag);
 		printf("剩余质量为:%.3fkg\n", Out3[0]*MUnit);
@@ -166,7 +157,8 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		if (Out3[9] < shortest2)
 			shortest2 = Out3[9];
 	}
-	// printf("最短转移时间为:%.3f天\n", shortest2*TUnit/86400);
+	// printf("第二段最短转移时间为:%.3f天\n", shortest2*TUnit/86400);
+	// printf("第二段实际转移时间为:%f天\n", t2*TUnit/86400);
 	// 判断能否完成第二段转移
 	if (shortest2 > t2)
 	{
@@ -180,16 +172,16 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第二段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out4[i]);
-	
+	*/
 
 	// nlopt时输出，PSO时不输出
-	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
+	// printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 
 	return -Out4[0]*MUnit;
 }
@@ -217,8 +209,8 @@ void GA_PSO()
 	double fbest;
 	int D, Np;
 	D = 6;
-	Np = 40;
-	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 10, 1);
+	Np = 50;
+	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 100, 1);
 	for (int i=0;i<D;++i)
 		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
 	printf("fbest=%.15f\n", fbest);
