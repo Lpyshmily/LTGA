@@ -54,15 +54,7 @@ int fvec_rv_fop_rend(int n, const double* x, double* fvec, int iflag, const doub
 	double RelTol=1e-12;
 	double work[140]={0.0};
 
-	
-	// 将积分过程输出到文件中
-	time_t now = time(NULL);
-	char filename[30];
-	sprintf(filename, "ode_%d.txt", now);
-	FILE *fid = fopen(filename, "w");
-	
-
-	// FILE *fid=NULL;//fopen("temp.txt","w");//如果设定有效文件路径，最后需要关闭文件
+	FILE *fid=NULL;//fopen("temp.txt","w");//如果设定有效文件路径，最后需要关闭文件
 	int flag, NumPoint;
 	flag = ode45(dynamics_rv_fop, x0, dfpara, 0.0, tf, 14, NumPoint, work, AbsTol, RelTol, 0, -1, -1, fid);
 
@@ -74,7 +66,7 @@ int fvec_rv_fop_rend(int n, const double* x, double* fvec, int iflag, const doub
 	{
 		fvec[0] = x0[6]; // 输出剩余质量
 	}
-	fclose(fid);
+	// fclose(fid);
 	return 0;
 }
 // Out[9] 输出变量 [0]~剩余质量 [1-8]~8个打靶变量
@@ -119,26 +111,6 @@ int solve_rv_fop_rend(double* Out, const double* rv0, const double* rvf, double 
 		x[5] = cos(angle[0])*cos(angle[1])*sin(angle[2])*cos(angle[4])*sin(angle[6]);
 		x[6] = cos(angle[0])*cos(angle[1])*sin(angle[2])*sin(angle[4]);
 		x[7] = cos(angle[0])*sin(angle[1]);
-
-		// GA第一段
-		x[0] = 8.046239878045387e-001;
-		x[1] = -2.443289425469893e-001;
-		x[2] = -3.388805570248314e-001;
-		x[3] = -3.685229465217167e-002;
-		x[4] = 3.223612567425680e-001;
-		x[5] = -2.402788863810115e-001;
-		x[6] = -9.699340788212746e-002;
-		x[7] = 7.501358724377988e-002;
-
-		// GA第二段
-		x[0] = 8.424738020525979e-001;
-		x[1] = -1.273152789553519e-001;
-		x[2] = 2.120126113944062e-001;
-		x[3] = -6.022980525892011e-003;
-		x[4] = -3.820774629894042e-001;
-		x[5] = -2.637371289846143e-001;
-		x[6] = 1.664044729452408e-003;
-		x[7] = 1.161888933616963e-001;
 		
 		info = hybrd1(fvec_rv_fop_rend, n, x, fvec, sfpara, wa, xtol, -1, 2000);
 		if(info>0 && enorm(n,fvec)<1e-8 && x[0]>0.0)

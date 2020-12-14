@@ -4,36 +4,37 @@
 
 #pragma comment(lib,"nlopt.lib")//必须包含的静态库，通过此静态库调用动态库nlopt.dll
 
-int global_count = 0;
+// int global_count = 0;
 
 // x[6] 0-引力辅助时间 1-引力辅助半径 2-vout方向角 3-5 引力辅助前相对速度vin的3个分量
 // 求解两段燃料最优交会问题
 // 三个分量的变化范围均为0-1，对应以下不同含义
-// 引力辅助时间指第引力辅助前第一段轨迹的转移时间，变化范围为[0.3,0.4]tf
+// 引力辅助时间指第引力辅助前第一段轨迹的转移时间，变化范围为[0,1]tf
 // 引力辅助半径变化范围为[1,2]rmin
 // vout方向角指vout和vin、vp组成的平面的夹角，变化范围为[0,pi]
-// vin3个分量的变化范围均为[-0.2,0.2]
+// vin3个分量的变化范围均为[-0.5,0.5]
 // para NULL
 double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 {
 	// Tools.h/constants.h
 	// Isp=6000 Tmax=2.26 m0=20000
 
-	double factor = x[0]*0.1 + 0.3;
-	double rp = rminU_MARS*(x[1] + 1.0);
-	double phi = x[2]*M_PI;
-	double vin[3] = {x[3]*0.4-0.2, x[4]*0.4-0.2, x[5]*0.4-0.2}; // 引力辅助前的相对速度
+	double factor = x[0];
+	double rp = rminU_MARS;
+	double phi = 0.5*M_PI;
+	double vin[3] = {x[3]*0.2-0.1, x[4]*0.2-0.1, x[5]*0.2-0.1}; // 引力辅助前的相对速度
 	
 	int i, j, flag;
 	
 	
 	// nlopt时输出，PSO时不输出
+	/*
 	printf("**********\n");
 	printf("迭代次数 i=%d\n", ++global_count);
 	for (i=0;i<6;++i)
 		printf("%.15f,\n", x[i]);
 	printf("**********\n");
-	
+	*/
 	
 	// 初始条件设定与归一化
 	// 初始、末端位置和速度，单位分别为AU和AU/a
@@ -68,7 +69,7 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 
 
 	// 求解算法的一些参数设置
-	int MaxGuessNum = 500;//设置最大随机猜测次数
+	int MaxGuessNum = 100;//设置最大随机猜测次数
 	srand( (unsigned)time( NULL ) );//设定随机数种子，若没有此设置，每次产生一样的随机数
 
 	// 求解
@@ -107,13 +108,13 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第一段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out2[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out2[i]);
-	
+	*/
 	
 
 	// 引力辅助
@@ -180,14 +181,15 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 		// printf("第二段燃料最优交会问题不收敛\n");
 		return MaxNum;
 	}
-	
+	/*
 	printf("求解成功%d\n",flag);
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 	printf("打靶变量值为:\n");
 	for (i=1; i<9; i++)
 		printf("%.15e,\n", Out4[i]);
+	*/
 	
-
+	/*
 	// nlopt时输出，PSO时不输出
 	printf("剩余质量为:%.3fkg\n", Out4[0]*MUnit);
 
@@ -208,6 +210,7 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 	printf("t2:%.15f\n", t2);
 	printf("m1:%.15f\n", m0);
 	printf("m2:%.15f\n", tempm);
+	*/
 
 	return -Out4[0]*MUnit;
 }
@@ -225,7 +228,7 @@ void test_GA_obj_nlopt()
 
 void test_GA_obj_PSO()
 {
-	double x[6] = {0.863655768384999,0.000017319770127,0.499034175810391,0.621295996122853,0.228521973614765,0.515503534531755}; // 16021.090445199869
+	double x[6] = {0.3863655768385,0.000017319770127,0.499034175810391,0.548518398449141,0.391408789445906,0.506201413812702}; // 16021.090445199869
 	printf("GA_obj_PSO返回值：%f\n", GA_obj_PSO(x, NULL));
 }
 
@@ -235,8 +238,8 @@ void GA_PSO()
 	double fbest;
 	int D, Np;
 	D = 6;
-	Np = 40;
-	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 10, 1);
+	Np = 500;
+	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 1, 1);
 	for (int i=0;i<D;++i)
 		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
 	printf("fbest=%.15f\n", fbest);

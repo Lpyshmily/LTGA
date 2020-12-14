@@ -13,11 +13,11 @@ int main()
 	// test_GA_obj_nlopt();
 	// test_GA_obj_PSO();
 
-	// GA_PSO();
+	GA_PSO();
 	// GA_nlopt();
 
 	// output_ode();
-	output_u();
+	// output_u();
 
 	stop = clock();
 	printf("计算用时为：%.3fs\n", (double)(stop-start)/CLOCKS_PER_SEC);
