@@ -45,7 +45,7 @@ double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 	MJDf = 58944.0; // 2020.04.05
 	m0 = 19820.0/MUnit;
 	tempm = m0;
-	tf = 1650.0*86400/TUnit;
+	tf = 6*365.25*86400/TUnit; // 1650.0*86400/TUnit
 	epsi = 1.0e-5;
 	t1 = factor*tf;
 	t2 = (1-factor)*tf;
