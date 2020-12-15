@@ -17,9 +17,9 @@ int global_count = 0;
 double GA_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
 {
 	double factor = x[0];
-	double rp = rminU_Earth*(x[1] + 1.0); // rminU_Earth*(x[1] + 1.0)
-	double phi = x[2]*M_PI; // x[2]*M_PI
-	double vin[3] = {x[3]-0.5, x[4]-0.5, x[5]-0.5}; // 引力辅助前的相对速度
+	double rp = rminU_Earth; // rminU_Earth*(x[1] + 1.0)
+	double phi = 0.5*M_PI; // x[2]*M_PI
+	double vin[3] = {x[3]*0.4-0.2, x[4]*0.4-0.2, x[5]*0.4-0.2}; // 引力辅助前的相对速度
 	
 	int i, j, flag;
 	
@@ -209,8 +209,8 @@ void GA_PSO()
 	double fbest;
 	int D, Np;
 	D = 6;
-	Np = 50;
-	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 100, 1);
+	Np = 1000;
+	PSO(GA_obj_PSO, xbest, fbest, NULL, D, Np, 1, 1);
 	for (int i=0;i<D;++i)
 		printf("xbest[%d]=%.15f,\n", i, xbest[i]);
 	printf("fbest=%.15f\n", fbest);
