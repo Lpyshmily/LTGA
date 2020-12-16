@@ -12,6 +12,8 @@ Low-thrust Gravity-assist
 
 * [LTGA_5](LTGA_5.md)
 
+* [LTGA_6](LTGA_6.md)
+
 * [Test_1](Test_1.md)
 
 * LTGA_1
