@@ -168,6 +168,18 @@ void ga_single1_list()
 	fclose(fid);
 }
 
+void ga_single1_denselist()
+{
+	FILE *fid = fopen("ga_single1_denselist.txt", "w");
+	double x0 = 0.3, xf = 0.35, dx = 0.001;
+	int segNum = 50;
+	for (int i=0;i<=segNum;++i)
+	{
+		fprintf(fid, "%f\t%f\n", x0 + i*dx, ga_single1_obj(x0 + i*dx));
+	}
+	fclose(fid);
+}
+
 double ga_single2_obj(double x)
 {
 	// Tools.h/constants.h

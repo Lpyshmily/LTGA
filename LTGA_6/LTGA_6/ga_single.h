@@ -4,6 +4,7 @@
 double ga_single1_obj(double x);
 void ga_single1_obj_test();
 void ga_single1_list();
+void ga_single1_denselist();
 
 double ga_single2_obj(double x);
 void ga_single2_list();
