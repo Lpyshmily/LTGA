@@ -1,5 +1,8 @@
 #include "ga_single.h"
+#include "nlopt.h"
 #include "localConst.h"
+
+#pragma comment(lib,"nlopt.lib")//必须包含的静态库，通过此静态库调用动态库nlopt.dll
 
 double ga_single1_obj(double x)
 {
@@ -153,7 +156,7 @@ void ga_single1_obj_test()
 	printf("%f对应的目标函数值为%f\n", x, ga_single1_obj(x));
 }
 
-void ga_single1_obj_list()
+void ga_single1_list()
 {
 	FILE *fid = fopen("ga_single1_obj_list.txt", "w");
 	double x0 = 0.0, xf = 1.0, dx = 0.01;
@@ -311,7 +314,7 @@ double ga_single2_obj(double x)
 	return -Out4[0]*MUnit;
 }
 
-void ga_single2_obj_list()
+void ga_single2_list()
 {
 	FILE *fid = fopen("ga_single2_obj_list.txt", "w");
 	double x0 = 0.0, xf = 1.0, dx = 0.01;
@@ -321,4 +324,28 @@ void ga_single2_obj_list()
 		fprintf(fid, "%f\t%f\n", x0 + i*dx, ga_single2_obj(x0 + i*dx));
 	}
 	fclose(fid);
+}
+
+double ga_single1_obj_nlopt(unsigned n, const double* x, double* grad, void* para)
+{
+	return ga_single1_obj(*x);
+}
+
+void ga_single1_nlopt()
+{
+	double f_min = 0;
+	double tol = 1e-5;
+	double x = 0.34;
+	double lb = 0.0;
+	double rb = 1.0;
+
+	nlopt_opt opter = nlopt_create(NLOPT_LN_COBYLA, 1);
+	nlopt_set_min_objective(opter, ga_single1_obj_nlopt, NULL);
+	nlopt_set_lower_bounds(opter, &lb);
+	nlopt_set_upper_bounds(opter, &rb);
+	nlopt_set_xtol_rel(opter, tol);
+
+	nlopt_result res = nlopt_optimize(opter, &x, &f_min);
+	printf("%.15f,\n", x);
+	printf("最小值为%.15f\n", f_min);
 }

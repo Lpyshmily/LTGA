@@ -13,8 +13,9 @@ int main()
 	start = clock();
 
 	// ga_single1_obj_test();
-	ga_single1_obj_list();
-	ga_single2_obj_list();
+	// ga_single1_list();
+	// ga_single2_list();
+	ga_single1_nlopt();
 
 	stop = clock();
 	printf("计算用时为：%.3fs\n", (double)(stop-start)/CLOCKS_PER_SEC);
